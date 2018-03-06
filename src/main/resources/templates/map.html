@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <title>Simple Map</title>
+
+        <style>
+            .parent {
+                float: left;
+                height: 100%;
+                width: 100%;
+            }
+            .map {
+                float: left;
+                height: 80%;
+                width: 60%;
+            }
+            html, body {
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                background-color: dimgrey;
+            }
+            .list {
+                background-color: dimgrey;
+                color: white;
+                width: 35%;
+                height: 60%;
+                float: left;
+                padding: 5px;
+            }
+            .list p {
+                background-color: #333333;
+                border-radius: 3px;
+                padding: 5px;
+                margin-bottom: 2px;
+            }
+            .list table th {
+                background-color: #333333;
+                border-radius: 3px;
+                padding: 5px;
+                font-size: 16px;
+            }
+            .list table td {
+                background-color: #333333;
+                border-radius: 3px;
+                padding: 5px;
+            }
+            .after {
+                clear: both;
+            }
+            .newloc {
+                margin-top: 0px;
+                margin-bottom: 10px;
+                background-color: #333333;
+                border-radius: 3px;
+                padding: 5px;
+            }
+            .locations {
+                margin-top: 20px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="parent">
+            <div class="list">
+                <table>
+                    <tr>
+                        <th>Groups</th>
+                        <td>
+                            <form th:action="@{/group}" th:method="POST">
+                                <input type="text" name="name"/>
+                                <input type="submit" value="add group"/>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Add from file</th>
+                        <td>
+                            <form th:action="@{/file}" th:method="POST" enctype="multipart/form-data">
+                                <input type="file" name="file"/>
+                                <input type="submit" value="add"/>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr th:each="group : ${groups}">
+                        <td><a th:text="${group.name}"></a></td>
+                        <td><form th:action="@{/map/{id}(id=${group.id})}" th:method="GET"><input type="submit" value="open"/></form></td>
+                        <td><form th:action="@{/group/{id}(id=${group.id})}" th:method="DELETE"><input type="submit" value="delete"/></form></td>
+                    </tr>
+                </table>
+                <div class="locations">
+                    <table>
+                        <tr>
+                            <th><span th:text="${groupName}"></span> Locations</th>
+                            <th>
+                                <form class="newloc" th:action="@{/location}" th:method="POST">
+                                    <input type="hidden" name="groupId" th:value="${groupId}"/>
+                                    <input type="text" name="name"/>
+                                    <input type="submit" value="add location"/>
+                                </form>
+                            </th>
+                        </tr>
+                        <tr th:each="item : ${list}">
+                            <td><a th:text="${item.name}"></a></td>
+                            <td><a th:text="${item.lat}"></a></td>
+                            <td><a th:text="${item.lng}"></a></td>
+                            <td><form th:action="@{/location/{lid}(lid=${item.id})}" th:method="DELETE"><input type="submit" value="delete"/></form></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div class="map" id="map"></div>
+            <div class="after"></div>
+        </div>
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+            var message = [[${list}]];
+            console.log(message);
+            /*]]>*/
+        </script>
+        <script>
+            /*<![CDATA[*/
+            var map;
+            function initMap() {
+                map = new google.maps.Map(document.getElementById('map'), {
+                  center: {lat: message[0].lat, lng: message[0].lng},
+                  zoom: 8
+                });
+
+                for (i = 0; i < message.length; i++) { 
+                    var loc = {lat: message[i].lat, lng: message[i].lng};
+                    var marker = new google.maps.Marker({
+                      position: loc,
+                      map: map
+                    });
+                }
+            }
+            /*]]>*/
+        </script>
+        <script src="https://maps.googleapis.com/maps/api/js?key=Google Api Key&amp;callback=initMap"></script>
+    </body>
+</html>
